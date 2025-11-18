@@ -55,10 +55,17 @@
 # if __name__ == "__main__":
 #     main()
 
-from modules.navigation.navigation_worker import NavigationWorker
-from modules.events.event_manager import EventManager
-from modules.speech.speech_worker import SpeechWorker
-from modules.events.event_bus import EventBus
+from modules.detector_worker_windows import DetectorWorker
+from modules.depth_worker_windows import DepthWorker
+from modules.face_worker_windows import FaceWorker
+from modules.emotion_worker_windows import EmotionWorker
+from modules.ocr_worker_windows import OCRWorker
+
+from modules.event_manager import EventManager
+from modules.tracker import CentroidTracker
+from modules.distance_estimator import DistanceEstimator
+from modules.navigation import navigation_advice
+
 import time
 
 SIMULATION_MODE = True
