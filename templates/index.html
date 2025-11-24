@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vision AI Assistant</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      padding: 16px 24px;
+      background: #111827;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .status {
+      font-size: 14px;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+    .status.on {
+      background: #10b98133;
+      color: #6ee7b7;
+      border: 1px solid #10b981;
+    }
+    .status.off {
+      background: #ef444433;
+      color: #fecaca;
+      border: 1px solid #ef4444;
+    }
+    main {
+      padding: 20px 24px 40px;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+    .card {
+      background: #111827;
+      border-radius: 16px;
+      padding: 16px 18px 20px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 18px;
+    }
+    .camera-frame {
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      overflow: hidden;
+      background: #000;
+    }
+    .camera-frame img {
+      width: 100%;
+      display: block;
+    }
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    button {
+      border-radius: 999px;
+      padding: 8px 14px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: #9ca3af;
+      border: 1px solid #374151;
+    }
+    .btn-ghost:hover {
+      background: #111827;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 14px;
+      color: #9ca3af;
+    }
+    input[type="text"],
+    input[type="file"] {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 7px 9px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 14px;
+    }
+    .flash {
+      background: #075985;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+    ul {
+      padding-left: 18px;
+      margin-top: 4px;
+    }
+    li {
+      margin-bottom: 2px;
+      font-size: 13px;
+    }
+    code {
+      background: #020617;
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      font-size: 11px;
+      margin: 2px 2px 2px 0;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Vision AI Assistant</h1>
+  <div>
+    {% if assistant_running %}
+      <span class="status on">Assistant running</span>
+    {% else %}
+      <span class="status off">Assistant stopped</span>
+    {% endif %}
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: Camera & Controls -->
+  <section class="card">
+    <h2>Live Camera</h2>
+    <p style="font-size:13px;color:#9ca3af;margin-top:0;">
+      Your assistant uses this camera feed + your default microphone to understand the environment.
+    </p>
+
+    <div class="btn-row">
+      <form method="post" action="{{ url_for('start_assistant') }}">
+        <button class="btn-primary" type="submit">Start Assistant</button>
+      </form>
+      <form method="post" action="{{ url_for('stop_assistant') }}">
+        <button class="btn-danger" type="submit">Stop Assistant</button>
+      </form>
+      <form method="post" action="{{ url_for('shutdown') }}">
+        <button class="btn-ghost" type="submit">Shutdown</button>
+      </form>
+    </div>
+
+    <div class="camera-frame">
+      <img src="{{ url_for('video_feed') }}" alt="Camera feed" />
+    </div>
+  </section>
+
+  <!-- RIGHT: Faces & Commands -->
+  <section class="card">
+    <h2>Known Faces</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for m in messages %}
+          <div class="flash">{{ m }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" action="{{ url_for('upload_face') }}" enctype="multipart/form-data">
+      <label for="person_name">Person name</label>
+      <input id="person_name" name="person_name" type="text" placeholder="e.g. Meghana" required />
+
+      <label for="face_image">Face image</label>
+      <input id="face_image" name="face_image" type="file" accept="image/*" required />
+
+      <button class="btn-primary" type="submit">Add / Update Face</button>
+    </form>
+
+    <p style="margin-top:12px;font-size:13px;color:#9ca3af;">Currently loaded:</p>
+    {% if known_faces %}
+      <div>
+        {% for name in known_faces %}
+          <span class="pill">{{ name }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p style="font-size:13px;color:#6b7280;">No known faces loaded yet.</p>
+    {% endif %}
+
+    <hr style="border:0;border-top:1px solid #1f2937;margin:16px 0;" />
+
+    <h2>Voice Commands</h2>
+    <p style="font-size:13px;color:#9ca3af;">
+      Talk normally to your assistant. Here are some examples it understands:
+    </p>
+
+    <ul>
+      <li><code>describe the scene</code>, <code>what do you see</code>, <code>what's in front of me</code></li>
+      <li><code>read the text</code>, <code>read the board</code>, <code>read what is written</code></li>
+      <li><code>who is in front of me</code>, <code>who is this</code>, <code>recognize the person</code></li>
+      <li><code>describe the emotion</code>, <code>what is the emotion</code></li>
+      <li><code>repeat that</code>, <code>say again</code></li>
+      <li><code>stop talking</code>, <code>start talking</code>, <code>stop listening</code>, <code>start listening</code></li>
+      <li><code>stop detection</code>, <code>start detection</code></li>
+      <li><code>hello</code>, <code>how are you</code>, <code>how is the weather</code></li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>
