@@ -7,35 +7,36 @@ import subprocess
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 
+import logbuffer  # for live console logs
 
-# ================== TEXT TO SPEECH (WINDOWS POWERSHELL) ==================
+
+# ================== TEXT TO SPEECH (QUEUE + POWERSHELL) ==================
 
 class TextToSpeech:
     """
     Text-to-speech using Windows PowerShell + System.Speech.
-
-    - Works offline.
-    - Each speak() call spawns a small PowerShell process that says the text.
-    - No issues with threads or "run loop already started".
+    Uses a background worker thread + queue so audio never overlaps.
     """
 
     def __init__(self, rate: int = 0):
-        """
-        rate: we map this to System.Speech Rate (-10 to +10).
-        If something huge is passed (like 170), we just clamp to 0.
-        """
+        # clamp to System.Speech rate range [-10, 10]
         if rate < -10 or rate > 10:
             self.rate = 0
         else:
             self.rate = rate
 
-    def speak(self, text: str):
+        self._queue: "queue.Queue[str | None]" = queue.Queue()
+        self._running = True
+
+        self._thread = threading.Thread(target=self._worker, daemon=True)
+        self._thread.start()
+
+    def _speak_once(self, text: str):
+        """Blocking speak of a single text using PowerShell."""
         if not text:
             return
 
-        # Escape single quotes for PowerShell single-quoted string
         safe_text = text.replace("'", "''")
-
         ps_command = (
             "Add-Type -AssemblyName System.Speech; "
             "$speak = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
@@ -43,16 +44,45 @@ class TextToSpeech:
             "$speak.Volume = 100; "
             f"$speak.Speak('{safe_text}');"
         )
-
         try:
-            # Launch PowerShell TTS in a separate process (non-blocking for Python)
-            subprocess.Popen(
+            # run synchronously, so this one finishes before next starts
+            subprocess.run(
                 ["powershell", "-Command", ps_command],
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
             )
         except Exception as e:
-            print("[look][TTS] Error while speaking:", e)
+            msg = f"[look][TTS] Error while speaking: {e}"
+            print(msg)
+            logbuffer.add(msg)
+
+    def _worker(self):
+        """Background worker that consumes the queue and speaks."""
+        while self._running:
+            try:
+                text = self._queue.get()
+                if text is None:
+                    break  # sentinel to stop
+                self._speak_once(text)
+            except Exception as e:
+                msg = f"[look][TTS] Error in TTS worker: {e}"
+                print(msg)
+                logbuffer.add(msg)
+
+    def speak(self, text: str):
+        """Public method: enqueue text to be spoken."""
+        if not text:
+            return
+        self._queue.put(text)
+
+    def stop(self):
+        """Stop the TTS worker gracefully."""
+        self._running = False
+        self._queue.put(None)
+        try:
+            self._thread.join(timeout=1.0)
+        except Exception:
+            pass
 
 
 # ================== SPEECH TO TEXT (VOSK) ==================
@@ -60,15 +90,14 @@ class TextToSpeech:
 class SpeechToTextListener:
     """
     Vosk STT using the **Windows default input device**.
-
-    - Choose mic (WO Mic, etc.) in Windows Sound Settings as default.
-    - Records audio at 16 kHz mono int16 (what Vosk expects).
+    Logs all [look][STT] lines to logbuffer for web console.
     """
 
     def __init__(self, model_path: str = "models/vosk_en"):
-        print("[look][STT] Initializing SpeechToTextListener (default input device)...")
+        msg = "[look][STT] Initializing SpeechToTextListener (default input device)..."
+        print(msg)
+        logbuffer.add(msg)
 
-        # default input device index from sounddevice
         default_in_index = sd.default.device[0]
         devices = sd.query_devices()
         dev_info = devices[default_in_index]
@@ -76,11 +105,15 @@ class SpeechToTextListener:
         self.device_index = default_in_index
         self.rec_rate = 16000  # Vosk model rate
 
-        print(f"[look][STT] Default input device index: {self.device_index}")
-        print(f"[look][STT] Device name: {dev_info['name']}")
-        print(f"[look][STT] Using recognizer rate: {self.rec_rate} Hz")
+        msg = (
+            f"[look][STT] Default input device index: {self.device_index}\n"
+            f"[look][STT] Device name: {dev_info['name']}\n"
+            f"[look][STT] Using recognizer rate: {self.rec_rate} Hz"
+        )
+        print(msg)
+        for line in msg.split("\n"):
+            logbuffer.add(line)
 
-        # Load Vosk model
         self.model = Model(model_path)
         self.recognizer = KaldiRecognizer(self.model, self.rec_rate)
 
@@ -88,11 +121,11 @@ class SpeechToTextListener:
         self._running: bool = False
         self._thread: Optional[threading.Thread] = None
 
-    # -------- INTERNAL CALLBACK --------
-
     def _callback(self, indata, frames, time_info, status):
         if status:
-            print("[look][STT] status:", status)
+            line = f"[look][STT] status: {status}"
+            print(line)
+            logbuffer.add(line)
         if not self._running:
             raise sd.CallbackStop()
 
@@ -105,7 +138,9 @@ class SpeechToTextListener:
             except Exception:
                 text = ""
             if text:
-                print(f"[look][STT] FULL Heard: {text!r}")
+                line = f"[look][STT] FULL Heard: {text!r}"
+                print(line)
+                logbuffer.add(line)
                 self._queue.put(text)
         else:
             try:
@@ -113,14 +148,19 @@ class SpeechToTextListener:
             except Exception:
                 partial = ""
             if partial:
-                print(f"[look][STT] partial: {partial!r}")
+                line = f"[look][STT] partial: {partial!r}"
+                print(line)
+                logbuffer.add(line)
 
     def _run(self):
         try:
-            print(
+            msg = (
                 f"[look][STT] Opening RawInputStream on default device "
                 f"(index {self.device_index}) at {self.rec_rate} Hz."
             )
+            print(msg)
+            logbuffer.add(msg)
+
             with sd.RawInputStream(
                 samplerate=self.rec_rate,
                 blocksize=8000,
@@ -132,20 +172,24 @@ class SpeechToTextListener:
                 while self._running:
                     sd.sleep(50)
         except Exception as e:
-            print("[look][STT] Error in audio stream:", e)
-
-    # -------- PUBLIC API --------
+            msg = f"[look][STT] Error in audio stream: {e}"
+            print(msg)
+            logbuffer.add(msg)
 
     def start(self):
         if self._running:
             return
-        print("[look][STT] Starting microphone listener.")
+        msg = "[look][STT] Starting microphone listener."
+        print(msg)
+        logbuffer.add(msg)
         self._running = True
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
 
     def stop(self):
-        print("[look][STT] Stopping microphone listener.")
+        msg = "[look][STT] Stopping microphone listener."
+        print(msg)
+        logbuffer.add(msg)
         self._running = False
 
     def get_latest_command(self) -> str:
