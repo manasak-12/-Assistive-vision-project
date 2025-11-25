@@ -56,9 +56,10 @@
       margin-top: 0;
       font-size: 15px;
     }
+
     .camera-frame {
       width: 100%;
-      max-height: 520px;
+      height: 520px;
       border-radius: 10px;
       border: 1px solid #1f2937;
       overflow: hidden;
@@ -70,6 +71,7 @@
       object-fit: cover;
       display: block;
     }
+
     .btn-row {
       display: flex;
       flex-wrap: wrap;
@@ -106,6 +108,7 @@
     .btn-ghost:hover {
       background: #111827;
     }
+
     label {
       display: block;
       margin-bottom: 3px;
@@ -130,6 +133,7 @@
       font-size: 12px;
       margin-bottom: 8px;
     }
+
     ul {
       padding-left: 16px;
       margin-top: 4px;
@@ -144,6 +148,7 @@
       border-radius: 4px;
       font-size: 11px;
     }
+
     .pill {
       display: inline-block;
       padding: 2px 7px;
@@ -154,12 +159,14 @@
       margin: 2px 2px 2px 0;
       color: #9ca3af;
     }
+
     .subcard-title {
       font-size: 14px;
       margin-top: 12px;
       margin-bottom: 4px;
       font-weight: 600;
     }
+
     .live-box {
       background: #020617;
       border-radius: 10px;
@@ -200,6 +207,7 @@
       color: #fecaca;
       border: 1px solid #b91c1c;
     }
+
     .log-box {
       background: #020617;
       border-radius: 10px;
@@ -208,7 +216,7 @@
       font-size: 11px;
       color: #e5e7eb;
       margin-top: 6px;
-      height: 140px;
+      height: 160px;
       overflow-y: auto;
       white-space: pre-wrap;
       font-family: Consolas, "Fira Code", monospace;
@@ -228,13 +236,9 @@
 </header>
 
 <main>
-  <!-- LEFT: Camera & Controls -->
+  <!-- LEFT: Camera -->
   <section class="card">
     <h2>Live Camera</h2>
-    <p style="font-size:11px;color:#9ca3af;margin-top:0;margin-bottom:8px;">
-      Your assistant uses this camera feed + your default microphone to understand the environment.
-    </p>
-
     <div class="btn-row">
       <form method="post" action="{{ url_for('start_assistant') }}">
         <button class="btn-primary" type="submit">Start Assistant</button>
@@ -252,7 +256,7 @@
     </div>
   </section>
 
-  <!-- RIGHT: Faces, Commands, Live Status & Console -->
+  <!-- RIGHT: Faces + Commands + Status + Console -->
   <section class="card">
     <h2>Known Faces</h2>
 
@@ -265,22 +269,17 @@
     {% endwith %}
 
     <form method="post" action="{{ url_for('upload_face') }}" enctype="multipart/form-data">
-      <label for="person_name">Person name</label>
-      <input id="person_name" name="person_name" type="text" placeholder="e.g. Meghana" required />
+      <label>Person name</label>
+      <input name="person_name" type="text" placeholder="e.g. Meghana" required />
 
-      <label for="face_image">Face image</label>
-      <input id="face_image" name="face_image" type="file" accept="image/*" required />
+      <label>Face image</label>
+      <input name="face_image" type="file" accept="image/*" required />
 
-      <div class="btn-row" style="margin-top:4px;">
-        <button class="btn-primary" type="submit">Add / Update Face</button>
-        <form method="post" action="{{ url_for('reload_faces') }}">
-          <!-- nested form is invalid HTML, so we'll put reload below instead -->
-        </form>
-      </div>
+      <button class="btn-primary" type="submit">Add / Update Face</button>
     </form>
 
-    <form method="post" action="{{ url_for('reload_faces') }}">
-      <button class="btn-ghost" type="submit" style="margin-top:4px;">Reload faces from folder</button>
+    <form method="post" action="{{ url_for('reload_faces') }}" style="margin-top:6px;">
+      <button class="btn-ghost" type="submit">Reload faces from folder</button>
     </form>
 
     <p style="margin-top:6px;font-size:12px;color:#9ca3af;">Currently loaded:</p>
@@ -293,8 +292,6 @@
     {% else %}
       <p style="font-size:12px;color:#6b7280;">No known faces loaded yet.</p>
     {% endif %}
-
-    <div style="border-top:1px solid #1f2937;margin:10px 0;"></div>
 
     <div class="subcard-title">Voice Commands</div>
     <p style="font-size:11px;color:#9ca3af;margin-top:2px;">
@@ -313,24 +310,18 @@
     </ul>
 
     <div class="subcard-title">Live Status</div>
-    <div class="live-box" id="live-box">
+    <div class="live-box">
       <div class="live-row">
         <span class="live-label">Assistant</span>
-        <span class="live-value">
-          <span id="live-assistant" class="badge badge-off">stopped</span>
-        </span>
+        <span class="live-value"><span id="live-assistant" class="badge badge-off">–</span></span>
       </div>
       <div class="live-row">
         <span class="live-label">Listening</span>
-        <span class="live-value">
-          <span id="live-listening" class="badge badge-off">off</span>
-        </span>
+        <span class="live-value"><span id="live-listening" class="badge badge-off">–</span></span>
       </div>
       <div class="live-row">
         <span class="live-label">Detection</span>
-        <span class="live-value">
-          <span id="live-detection" class="badge badge-off">off</span>
-        </span>
+        <span class="live-value"><span id="live-detection" class="badge badge-off">–</span></span>
       </div>
       <div class="live-row">
         <span class="live-label">Last heard</span>
@@ -343,9 +334,7 @@
     </div>
 
     <div class="subcard-title">Live Console</div>
-    <div class="log-box" id="log-box">
-      <!-- [look][STT] ... logs will appear here -->
-    </div>
+    <div class="log-box" id="log-box"></div>
   </section>
 </main>
 
@@ -356,38 +345,18 @@
       if (!res.ok) return;
       const data = await res.json();
 
-      const a = document.getElementById("live-assistant");
-      const l = document.getElementById("live-listening");
-      const d = document.getElementById("live-detection");
-      const cmd = document.getElementById("live-command");
-      const spoken = document.getElementById("live-spoken");
-
-      if (data.assistant_running) {
-        a.textContent = "running";
-        a.className = "badge badge-on";
-      } else {
-        a.textContent = "stopped";
-        a.className = "badge badge-off";
+      function setBadge(id, isOn, text) {
+        const el = document.getElementById(id);
+        el.textContent = text;
+        el.className = isOn ? "badge badge-on" : "badge badge-off";
       }
 
-      if (data.listening_enabled) {
-        l.textContent = "on";
-        l.className = "badge badge-on";
-      } else {
-        l.textContent = "off";
-        l.className = "badge badge-off";
-      }
+      setBadge("live-assistant", data.assistant_running, data.assistant_running ? "running" : "stopped");
+      setBadge("live-listening", data.listening_enabled, data.listening_enabled ? "on" : "off");
+      setBadge("live-detection", data.detection_enabled, data.detection_enabled ? "on" : "off");
 
-      if (data.detection_enabled) {
-        d.textContent = "on";
-        d.className = "badge badge-on";
-      } else {
-        d.textContent = "off";
-        d.className = "badge badge-off";
-      }
-
-      cmd.textContent = data.last_command || "–";
-      spoken.textContent = data.last_spoken || "–";
+      document.getElementById("live-command").textContent = data.last_command || "–";
+      document.getElementById("live-spoken").textContent = data.last_spoken || "–";
     } catch (e) {}
   }
 
@@ -402,8 +371,8 @@
     } catch (e) {}
   }
 
-  setInterval(refreshStatus, 1000);
-  setInterval(refreshLogs, 1000);
+  setInterval(refreshStatus, 800);
+  setInterval(refreshLogs, 800);
   refreshStatus();
   refreshLogs();
 </script>
