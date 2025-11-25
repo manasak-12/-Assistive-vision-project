@@ -93,7 +93,12 @@ class VisionSystem:
         """
         Load known faces from faces_db/ folder.
         Each image file name is treated as the person's name.
+        Clears old encodings first so deletions & updates are respected.
         """
+        # Clear old faces so reloading reflects actual folder contents
+        self.known_face_encodings = []
+        self.known_face_names = []
+
         if not os.path.isdir(folder):
             print(f"[look] Faces folder '{folder}' not found. No known faces loaded.")
             return
@@ -103,7 +108,7 @@ class VisionSystem:
             if not filename.lower().endswith((".jpg", ".jpeg", ".png")):
                 continue
 
-            name = os.path.splitext(filename)[0]  # "rahul.jpg" -> "rahul"
+            name = os.path.splitext(filename)[0]
             path = os.path.join(folder, filename)
 
             try:
