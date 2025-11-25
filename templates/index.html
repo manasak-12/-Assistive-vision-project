@@ -12,7 +12,7 @@
       padding: 0;
     }
     header {
-      padding: 16px 24px;
+      padding: 10px 18px;
       background: #111827;
       border-bottom: 1px solid #1f2937;
       display: flex;
@@ -21,11 +21,11 @@
     }
     h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 20px;
     }
     .status {
-      font-size: 14px;
-      padding: 4px 10px;
+      font-size: 12px;
+      padding: 3px 8px;
       border-radius: 999px;
     }
     .status.on {
@@ -39,44 +39,49 @@
       border: 1px solid #ef4444;
     }
     main {
-      padding: 20px 24px 40px;
+      padding: 14px 18px 30px;
       display: grid;
-      grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-      gap: 20px;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 16px;
     }
     .card {
       background: #111827;
-      border-radius: 16px;
-      padding: 16px 18px 20px;
+      border-radius: 14px;
+      padding: 12px 14px 14px;
       border: 1px solid #1f2937;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      font-size: 13px;
     }
     .card h2 {
       margin-top: 0;
-      font-size: 18px;
+      font-size: 15px;
     }
     .camera-frame {
       width: 100%;
-      border-radius: 12px;
+      max-height: 520px;
+      border-radius: 10px;
       border: 1px solid #1f2937;
       overflow: hidden;
       background: #000;
     }
     .camera-frame img {
       width: 100%;
+      height: 100%;
+      object-fit: cover;
       display: block;
     }
     .btn-row {
       display: flex;
-      gap: 10px;
-      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
     }
     button {
       border-radius: 999px;
-      padding: 8px 14px;
+      padding: 6px 12px;
       border: none;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 12px;
       font-weight: 500;
     }
     .btn-primary {
@@ -103,51 +108,110 @@
     }
     label {
       display: block;
-      margin-bottom: 4px;
-      font-size: 14px;
+      margin-bottom: 3px;
+      font-size: 12px;
       color: #9ca3af;
     }
     input[type="text"],
     input[type="file"] {
       width: 100%;
-      margin-bottom: 10px;
-      padding: 7px 9px;
+      margin-bottom: 8px;
+      padding: 5px 7px;
       border-radius: 8px;
       border: 1px solid #374151;
       background: #020617;
       color: #e5e7eb;
-      font-size: 14px;
+      font-size: 12px;
     }
     .flash {
       background: #075985;
-      border-radius: 10px;
-      padding: 8px 10px;
-      font-size: 13px;
-      margin-bottom: 10px;
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 12px;
+      margin-bottom: 8px;
     }
     ul {
-      padding-left: 18px;
+      padding-left: 16px;
       margin-top: 4px;
     }
     li {
       margin-bottom: 2px;
-      font-size: 13px;
+      font-size: 12px;
     }
     code {
       background: #020617;
       padding: 1px 4px;
       border-radius: 4px;
-      font-size: 12px;
+      font-size: 11px;
     }
     .pill {
       display: inline-block;
-      padding: 2px 8px;
+      padding: 2px 7px;
       border-radius: 999px;
       background: #111827;
       border: 1px solid #1f2937;
       font-size: 11px;
       margin: 2px 2px 2px 0;
       color: #9ca3af;
+    }
+    .subcard-title {
+      font-size: 14px;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .live-box {
+      background: #020617;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      padding: 8px 9px;
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 6px;
+    }
+    .live-row {
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .live-label {
+      color: #6b7280;
+    }
+    .live-value {
+      color: #e5e7eb;
+      max-width: 200px;
+      text-align: right;
+      word-break: break-word;
+    }
+    .badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: 10px;
+      margin-right: 4px;
+    }
+    .badge-on {
+      background: #04785733;
+      color: #6ee7b7;
+      border: 1px solid #047857;
+    }
+    .badge-off {
+      background: #7f1d1d33;
+      color: #fecaca;
+      border: 1px solid #b91c1c;
+    }
+    .log-box {
+      background: #020617;
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      padding: 6px 8px;
+      font-size: 11px;
+      color: #e5e7eb;
+      margin-top: 6px;
+      height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: Consolas, "Fira Code", monospace;
     }
   </style>
 </head>
@@ -167,7 +231,7 @@
   <!-- LEFT: Camera & Controls -->
   <section class="card">
     <h2>Live Camera</h2>
-    <p style="font-size:13px;color:#9ca3af;margin-top:0;">
+    <p style="font-size:11px;color:#9ca3af;margin-top:0;margin-bottom:8px;">
       Your assistant uses this camera feed + your default microphone to understand the environment.
     </p>
 
@@ -188,7 +252,7 @@
     </div>
   </section>
 
-  <!-- RIGHT: Faces & Commands -->
+  <!-- RIGHT: Faces, Commands, Live Status & Console -->
   <section class="card">
     <h2>Known Faces</h2>
 
@@ -207,10 +271,19 @@
       <label for="face_image">Face image</label>
       <input id="face_image" name="face_image" type="file" accept="image/*" required />
 
-      <button class="btn-primary" type="submit">Add / Update Face</button>
+      <div class="btn-row" style="margin-top:4px;">
+        <button class="btn-primary" type="submit">Add / Update Face</button>
+        <form method="post" action="{{ url_for('reload_faces') }}">
+          <!-- nested form is invalid HTML, so we'll put reload below instead -->
+        </form>
+      </div>
     </form>
 
-    <p style="margin-top:12px;font-size:13px;color:#9ca3af;">Currently loaded:</p>
+    <form method="post" action="{{ url_for('reload_faces') }}">
+      <button class="btn-ghost" type="submit" style="margin-top:4px;">Reload faces from folder</button>
+    </form>
+
+    <p style="margin-top:6px;font-size:12px;color:#9ca3af;">Currently loaded:</p>
     {% if known_faces %}
       <div>
         {% for name in known_faces %}
@@ -218,27 +291,121 @@
         {% endfor %}
       </div>
     {% else %}
-      <p style="font-size:13px;color:#6b7280;">No known faces loaded yet.</p>
+      <p style="font-size:12px;color:#6b7280;">No known faces loaded yet.</p>
     {% endif %}
 
-    <hr style="border:0;border-top:1px solid #1f2937;margin:16px 0;" />
+    <div style="border-top:1px solid #1f2937;margin:10px 0;"></div>
 
-    <h2>Voice Commands</h2>
-    <p style="font-size:13px;color:#9ca3af;">
-      Talk normally to your assistant. Here are some examples it understands:
+    <div class="subcard-title">Voice Commands</div>
+    <p style="font-size:11px;color:#9ca3af;margin-top:2px;">
+      Some examples your assistant understands:
     </p>
-
     <ul>
       <li><code>describe the scene</code>, <code>what do you see</code>, <code>what's in front of me</code></li>
-      <li><code>read the text</code>, <code>read the board</code>, <code>read what is written</code></li>
-      <li><code>who is in front of me</code>, <code>who is this</code>, <code>recognize the person</code></li>
+      <li><code>count objects</code>, <code>count object</code></li>
+      <li><code>read the text</code>, <code>read the board</code></li>
+      <li><code>who is in front of me</code>, <code>who is this</code></li>
       <li><code>describe the emotion</code>, <code>what is the emotion</code></li>
       <li><code>repeat that</code>, <code>say again</code></li>
       <li><code>stop talking</code>, <code>start talking</code>, <code>stop listening</code>, <code>start listening</code></li>
       <li><code>stop detection</code>, <code>start detection</code></li>
       <li><code>hello</code>, <code>how are you</code>, <code>how is the weather</code></li>
     </ul>
+
+    <div class="subcard-title">Live Status</div>
+    <div class="live-box" id="live-box">
+      <div class="live-row">
+        <span class="live-label">Assistant</span>
+        <span class="live-value">
+          <span id="live-assistant" class="badge badge-off">stopped</span>
+        </span>
+      </div>
+      <div class="live-row">
+        <span class="live-label">Listening</span>
+        <span class="live-value">
+          <span id="live-listening" class="badge badge-off">off</span>
+        </span>
+      </div>
+      <div class="live-row">
+        <span class="live-label">Detection</span>
+        <span class="live-value">
+          <span id="live-detection" class="badge badge-off">off</span>
+        </span>
+      </div>
+      <div class="live-row">
+        <span class="live-label">Last heard</span>
+        <span class="live-value" id="live-command">–</span>
+      </div>
+      <div class="live-row">
+        <span class="live-label">Last spoken</span>
+        <span class="live-value" id="live-spoken">–</span>
+      </div>
+    </div>
+
+    <div class="subcard-title">Live Console</div>
+    <div class="log-box" id="log-box">
+      <!-- [look][STT] ... logs will appear here -->
+    </div>
   </section>
 </main>
+
+<script>
+  async function refreshStatus() {
+    try {
+      const res = await fetch("{{ url_for('status') }}");
+      if (!res.ok) return;
+      const data = await res.json();
+
+      const a = document.getElementById("live-assistant");
+      const l = document.getElementById("live-listening");
+      const d = document.getElementById("live-detection");
+      const cmd = document.getElementById("live-command");
+      const spoken = document.getElementById("live-spoken");
+
+      if (data.assistant_running) {
+        a.textContent = "running";
+        a.className = "badge badge-on";
+      } else {
+        a.textContent = "stopped";
+        a.className = "badge badge-off";
+      }
+
+      if (data.listening_enabled) {
+        l.textContent = "on";
+        l.className = "badge badge-on";
+      } else {
+        l.textContent = "off";
+        l.className = "badge badge-off";
+      }
+
+      if (data.detection_enabled) {
+        d.textContent = "on";
+        d.className = "badge badge-on";
+      } else {
+        d.textContent = "off";
+        d.className = "badge badge-off";
+      }
+
+      cmd.textContent = data.last_command || "–";
+      spoken.textContent = data.last_spoken || "–";
+    } catch (e) {}
+  }
+
+  async function refreshLogs() {
+    try {
+      const res = await fetch("{{ url_for('logs') }}");
+      if (!res.ok) return;
+      const data = await res.json();
+      const logBox = document.getElementById("log-box");
+      logBox.textContent = (data.lines || []).join("\n");
+      logBox.scrollTop = logBox.scrollHeight;
+    } catch (e) {}
+  }
+
+  setInterval(refreshStatus, 1000);
+  setInterval(refreshLogs, 1000);
+  refreshStatus();
+  refreshLogs();
+</script>
 </body>
 </html>
