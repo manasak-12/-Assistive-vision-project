@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI-Based Assistive Vision System for the Visually Impaired</title>
 </head>
 <body>
 
