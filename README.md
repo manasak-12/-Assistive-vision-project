@@ -145,6 +145,12 @@ Different components operate independently while sharing data through controlled
 B.E. Computer Science and Engineering (Data Science)<br>
 SJB Institute of Technology, VTU
 </p>
+<p>
+<strong>Anagha V</strong><br>
+B.E. Computer Science and Engineering (Data Science)<br>
+SJB Institute of Technology, VTU
+</p>
+
 
 </body>
 </html>
